@@ -18,7 +18,7 @@ st.title("NY Mortality Data Dashboard")
 
 # Year Selector
 years = df["Year"].unique()
-year = st.slider("Select Year", min_value=min(years), max_value=max(years), value=min(years), value = 2012)
+year = st.slider("Select Year", min_value=min(years), max_value=max(years), value=2012)
 
 # Gender Selector
 gender_options = ["All"] + list(df["Sex"].unique())

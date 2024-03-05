@@ -35,7 +35,6 @@ cause_options = df["Cause"].unique()
 selected_cause = st.selectbox("Select Cause of Death", options=cause_options)
 
 ### Data Filtering ###
-
 if gender == "All":
     filtered_df = df[(df["Year"] == year) & (df["Cause"] == selected_cause)]
 else:
@@ -46,17 +45,25 @@ else:
 # Bar Chart: Deaths by Race/Ethnicity
 bar_chart_data = filtered_df.groupby("Race")["Deaths"].sum().reset_index()
 bar_chart_data = bar_chart_data.sort_values('Deaths', ascending=False)
+race_order = ['White Non Hispanic', 'Black Non Hispanic', 'Hispanic', 'Other Non Hispanic', 'Not Stated']
+gender_scale = alt.Scale(domain=['Female', 'Male'], range=['pink', 'blue'])
 bar_color = alt.condition(
     alt.datum.Sex == 'Female', alt.value('pink'),
     alt.condition(alt.datum.Sex == 'Male', alt.value('blue'), alt.Color('Race:N'))
 )
 bar_chart = alt.Chart(bar_chart_data).mark_bar().encode(
-    x=alt.X("Race:N", title="Race/Ethnicity"),
+    x=alt.X('Race:N', title='Race/Ethnicity', sort=race_order),
     y=alt.Y("Deaths:Q", title="Number of Deaths"),
     color=bar_color if gender == "All" else alt.value('steelblue')
 ).properties(
     title=f"Deaths by Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )
+
+color_encoding = alt.Color('Sex:N', scale=gender_scale, legend=None)
+if gender == "All":
+    color_encoding = alt.Color('Sex:N', scale=gender_scale)
+
+bar_chart = bar_chart.encode(color=color_encoding)
 
 st.altair_chart(bar_chart, use_container_width=True)
 
@@ -64,8 +71,9 @@ st.altair_chart(bar_chart, use_container_width=True)
 total_deaths = filtered_df['Deaths'].sum()
 heatmap_data = filtered_df.groupby(["Age-Group", "Race"])["Deaths"].sum().reset_index()
 heatmap_data['Proportion'] = heatmap_data['Deaths'] / total_deaths
+age_group_order = ['<1', '1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
 heatmap = alt.Chart(heatmap_data).mark_rect().encode(
-    x=alt.X("Age-Group:N", title="Age Group"),
+    x=alt.X('Age-Group:N', title='Age Group', sort=age_group_order),
     y=alt.Y("Race:N", title="Race/Ethnicity"),
     color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
@@ -93,7 +101,7 @@ if st.checkbox("Show Cause of Death Proportions"):
         tooltip=[
             alt.Tooltip('Cause:N'),
             alt.Tooltip('Deaths:Q'),
-            alt.Tooltip('Percentage:Q', title='Percentage', format='.2f')
+            alt.Tooltip('Percentage:Q', title='Percentage', format='.2%')
         ]
     ).properties(
         title=f"Cause of Death Proportions in {year}"

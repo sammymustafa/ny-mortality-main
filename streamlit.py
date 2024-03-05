@@ -7,29 +7,35 @@ import streamlit as st
 @st.cache
 def load_data():
     df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
+    df.columns = df.columns.str.replace(' ', '-')
+    df = df[df["Cause-of-Death"] != "Total"]
     return df
 
 df = load_data()
 
 ### Streamlit UI Components ###
 
-st.title(" NYMortality Data Dashboard")
+st.title("NY Mortality Data Dashboard")
 
 # Year Selector
 years = df["Year"].unique()
 year = st.slider("Select Year", min_value=min(years), max_value=max(years), value=min(years))
 
 # Gender Selector
-gender_options = df["Sex"].unique()
+gender_options = ["All"] + list(df["Sex"].unique())
 gender = st.radio("Select Gender", options=gender_options)
 
+
 # Cause of Death Selector
-cause_options = df["Cause of Death"].unique()
+cause_options = df["Cause-of-Death"].unique()
 selected_cause = st.selectbox("Select Cause of Death", options=cause_options)
 
 ### Data Filtering ###
 
-filtered_df = df[(df["Year"] == year) & (df["Sex"] == gender) & (df["Cause of Death"] == selected_cause)]
+if gender == "All":
+    filtered_df = df[(df["Year"] == year) & (df["Cause of Death"] == selected_cause)]
+else:
+    filtered_df = df[(df["Year"] == year) & (df["Sex"] == gender) & (df["Cause of Death"] == selected_cause)]
 
 ### Visualizations ###
 

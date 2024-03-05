@@ -9,7 +9,7 @@ def load_data():
     df.columns = df.columns.str.replace(' ', '-')
     df['Age-Group'] = df['Age-Group'].replace('45300', '1-9')
     df['Age-Group'] = df['Age-Group'].replace('45584', '10-19')
-    df = df[df["Cause"] != "Total"]
+    df = df[df["Selected-Cause-of-Death"] != "Total"]
     df["Sex"] = df["Sex"].replace({"F": "Female", "M": "Male"})
     return df
 

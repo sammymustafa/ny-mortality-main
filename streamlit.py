@@ -28,6 +28,7 @@ year = st.slider("Select Year", min_value=min(years), max_value=max(years), valu
 # Gender Selector
 gender_options = ["All"] + list(df["Sex"].unique())
 gender = st.radio("Select Gender", options=gender_options)
+gender_title = "Both Genders" if gender == "All" else gender + "s"
 
 # Cause of Death Selector
 cause_options = df["Cause"].unique()
@@ -44,37 +45,56 @@ else:
 
 # Bar Chart: Deaths by Race/Ethnicity
 bar_chart_data = filtered_df.groupby("Race")["Deaths"].sum().reset_index()
+bar_chart_data = bar_chart_data.sort_values('Deaths', ascending=False)
+bar_color = alt.condition(
+    alt.datum.Sex == 'Female', alt.value('pink'),
+    alt.condition(alt.datum.Sex == 'Male', alt.value('blue'), alt.Color('Race:N'))
+)
 bar_chart = alt.Chart(bar_chart_data).mark_bar().encode(
     x=alt.X("Race:N", title="Race/Ethnicity"),
     y=alt.Y("Deaths:Q", title="Number of Deaths"),
-    color="Race:N"
+    color=bar_color if gender == "All" else alt.value('steelblue')
 ).properties(
-    title=f"Deaths by Race/Ethnicity in {year} for {gender} due to {selected_cause}"
+    title=f"Deaths by Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )
 
 st.altair_chart(bar_chart, use_container_width=True)
 
 # Heatmap: Mortality Rates by Age Group and Race/Ethnicity
+total_deaths = filtered_df['Deaths'].sum()
 heatmap_data = filtered_df.groupby(["Age-Group", "Race"])["Deaths"].sum().reset_index()
+heatmap_data['Proportion'] = heatmap_data['Deaths'] / total_deaths
 heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     x=alt.X("Age-Group:N", title="Age Group"),
     y=alt.Y("Race:N", title="Race/Ethnicity"),
-    color=alt.Color("Deaths:Q", title="Number of Deaths", scale=alt.Scale(scheme="redyellowgreen")),
-    tooltip=["Age-Group", "Race", "Deaths"]
+    color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
+    tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
 ).properties(
-    title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender} due to {selected_cause}"
+    title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )
 
 st.altair_chart(heatmap, use_container_width=True)
 
 ### Pie Chart: Cause of Death Proportion ###
-
 if st.checkbox("Show Cause of Death Proportions"):
+    # Calculate the total number of deaths for the year
+    total_deaths_for_year = df[df["Year"] == year]['Deaths'].sum()
+
+    # Get the cause of death proportions
     pie_chart_data = df[df["Year"] == year].groupby("Cause")["Deaths"].sum().reset_index()
+
+    # Calculate the percentage of total deaths for each cause
+    pie_chart_data['Percentage'] = (pie_chart_data['Deaths'] / total_deaths_for_year) * 100
+
+    # Create the pie chart
     pie_chart = alt.Chart(pie_chart_data).mark_arc().encode(
         theta=alt.Theta(field="Deaths", type="quantitative"),
         color=alt.Color(field="Cause", type="nominal"),
-        tooltip=["Cause", "Deaths"]
+        tooltip=[
+            alt.Tooltip('Cause:N'),
+            alt.Tooltip('Deaths:Q'),
+            alt.Tooltip('Percentage:Q', title='Percentage', format='.2f')
+        ]
     ).properties(
         title=f"Cause of Death Proportions in {year}"
     )

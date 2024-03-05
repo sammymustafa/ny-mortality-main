@@ -7,6 +7,7 @@ import streamlit as st
 def load_data():
     df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
     df.columns = df.columns.str.replace(' ', '-')
+    df = df[df["Selected-Cause-of-Death"] != "Total"]
     return df
 
 df = load_data()
@@ -17,27 +18,27 @@ st.title("NY Mortality Data Dashboard")
 
 # Year Selector
 years = df["Year"].unique()
-year = st.slider("Select Year", min_value=min(years), max_value=max(years), value=min(years))
+year = st.slider("Select Year", min_value=min(years), max_value=max(years), value=min(years), value = 2012)
 
 # Gender Selector
 gender_options = ["All"] + list(df["Sex"].unique())
 gender = st.radio("Select Gender", options=gender_options)
 
 # Cause of Death Selector
-cause_options = df["Cause-of-Death"].unique()
+cause_options = df["Selected-Cause-of-Death"].unique()
 selected_cause = st.selectbox("Select Cause of Death", options=cause_options)
 
 ### Data Filtering ###
 
 if gender == "All":
-    filtered_df = df[(df["Year"] == year) & (df["Cause-of-Death"] == selected_cause)]
+    filtered_df = df[(df["Year"] == year) & (df["Selected-Cause-of-Death"] == selected_cause)]
 else:
-    filtered_df = df[(df["Year"] == year) & (df["Sex"] == gender) & (df["Cause-of-Death"] == selected_cause)]
+    filtered_df = df[(df["Year"] == year) & (df["Sex"] == gender) & (df["Selected-Cause-of-Death"] == selected_cause)]
 
 ### Visualizations ###
 
 # Bar Chart: Deaths by Race/Ethnicity
-bar_chart_data = filtered_df.groupby("Race-Ethnicity")["Deaths"].sum().reset_index()
+bar_chart_data = filtered_df.groupby("Race-or-Ethnicity")["Deaths"].sum().reset_index()
 bar_chart = alt.Chart(bar_chart_data).mark_bar().encode(
     x=alt.X("Race-Ethnicity:N", title="Race/Ethnicity"),
     y=alt.Y("Deaths:Q", title="Number of Deaths"),
@@ -64,11 +65,11 @@ st.altair_chart(heatmap, use_container_width=True)
 ### Pie Chart: Cause of Death Proportion ###
 
 if st.checkbox("Show Cause of Death Proportions"):
-    pie_chart_data = df[df["Year"] == year].groupby("Cause-of-Death")["Deaths"].sum().reset_index()
+    pie_chart_data = df[df["Year"] == year].groupby("Selected-Cause-of-Death")["Deaths"].sum().reset_index()
     pie_chart = alt.Chart(pie_chart_data).mark_arc().encode(
         theta=alt.Theta(field="Deaths", type="quantitative"),
-        color=alt.Color(field="Cause-of-Death", type="nominal"),
-        tooltip=["Cause-of-Death", "Deaths"]
+        color=alt.Color(field="Selected-Cause-of-Death", type="nominal"),
+        tooltip=["Selected-Cause-of-Death", "Deaths"]
     ).properties(
         title=f"Cause of Death Proportions in {year}"
     )

@@ -1,47 +1,73 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import altair as alt
+import streamlit as st
 
-# Hypothetical data for the dashboard
-df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
+### Data Loading and Preprocessing ###
 
-# Group data by Year and Cause of Death for line chart
-line_chart_data = df.groupby(['Year', 'Cause of Death'])['Deaths'].sum().unstack()
+@st.cache
+def load_data():
+    df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
+    return df
 
-# Group data by Cause of Death for pie chart
-pie_chart_data = df[df['Year'] == 2010]['Deaths'].groupby(df['Cause of Death']).sum()
+df = load_data()
 
-# Group data by County for bar chart
-bar_chart_data = df[df['Year'] == 2010]['Deaths'].groupby(df['County']).sum()
+### Streamlit UI Components ###
 
-# Create line chart
-plt.figure(figsize=(10, 6))
-sns.lineplot(data=line_chart_data)
-plt.title('Trend of Deaths by Cause Over Years')
-plt.ylabel('Number of Deaths')
-plt.xlabel('Year')
-plt.legend(title='Cause of Death')
-plt.grid(True)
-plt.tight_layout()  # Adjust layout to fit the figure nicely
-plt.savefig('line_chart.png')  # Save the figure as a .png file
-plt.show()
+st.title(" NYMortality Data Dashboard")
 
-# Create pie chart
-plt.figure(figsize=(8, 8))
-pie_chart_data.plot(kind='pie', autopct='%1.1f%%')
-plt.title('Cause of Death Distribution for 2010')
-plt.ylabel('')  # Hide the y-axis label
-plt.tight_layout()  # Adjust layout to fit the figure nicely
-plt.savefig('pie_chart.png')  # Save the figure as a .png file
-plt.show()
+# Year Selector
+years = df["Year"].unique()
+year = st.slider("Select Year", min_value=min(years), max_value=max(years), value=min(years))
 
-# Create bar chart
-plt.figure(figsize=(10, 6))
-sns.barplot(x=bar_chart_data.index, y=bar_chart_data.values)
-plt.title('Total Number of Deaths by County for 2010')
-plt.ylabel('Number of Deaths')
-plt.xlabel('County')
-plt.xticks(rotation=45)
-plt.tight_layout()  # Adjust layout to fit the figure nicely
-plt.savefig('bar_chart.png')  # Save the figure as a .png file
-plt.show()
+# Gender Selector
+gender_options = df["Sex"].unique()
+gender = st.radio("Select Gender", options=gender_options)
+
+# Cause of Death Selector
+cause_options = df["Cause of Death"].unique()
+selected_cause = st.selectbox("Select Cause of Death", options=cause_options)
+
+### Data Filtering ###
+
+filtered_df = df[(df["Year"] == year) & (df["Sex"] == gender) & (df["Cause of Death"] == selected_cause)]
+
+### Visualizations ###
+
+# Bar Chart: Deaths by Race/Ethnicity
+bar_chart_data = filtered_df.groupby("Race/Ethnicity")["Deaths"].sum().reset_index()
+bar_chart = alt.Chart(bar_chart_data).mark_bar().encode(
+    x=alt.X("Race/Ethnicity:N", title="Race/Ethnicity"),
+    y=alt.Y("Deaths:Q", title="Number of Deaths"),
+    color="Race/Ethnicity:N"
+).properties(
+    title=f"Deaths by Race/Ethnicity in {year} for {gender} due to {selected_cause}"
+)
+
+st.altair_chart(bar_chart, use_container_width=True)
+
+# Heatmap: Mortality Rates by Age Group and Race/Ethnicity
+heatmap_data = filtered_df.groupby(["Age Group", "Race/Ethnicity"])["Deaths"].sum().reset_index()
+heatmap = alt.Chart(heatmap_data).mark_rect().encode(
+    x=alt.X("Age Group:N", title="Age Group"),
+    y=alt.Y("Race/Ethnicity:N", title="Race/Ethnicity"),
+    color=alt.Color("Deaths:Q", title="Number of Deaths", scale=alt.Scale(scheme="redyellowgreen")),
+    tooltip=["Age Group", "Race/Ethnicity", "Deaths"]
+).properties(
+    title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender} due to {selected_cause}"
+)
+
+st.altair_chart(heatmap, use_container_width=True)
+
+### Pie Chart: Cause of Death Proportion ###
+
+if st.checkbox("Show Cause of Death Proportions"):
+    pie_chart_data = df[df["Year"] == year].groupby("Cause of Death")["Deaths"].sum().reset_index()
+    pie_chart = alt.Chart(pie_chart_data).mark_arc().encode(
+        theta=alt.Theta(field="Deaths", type="quantitative"),
+        color=alt.Color(field="Cause of Death", type="nominal"),
+        tooltip=["Cause of Death", "Deaths"]
+    ).properties(
+        title=f"Cause of Death Proportions in {year}"
+    )
+
+    st.altair_chart(pie_chart, use_container_width=True)

@@ -93,7 +93,7 @@ if st.checkbox("Show Cause of Death Proportions"):
         tooltip=[
             alt.Tooltip('Cause:N'),
             alt.Tooltip('Deaths:Q'),
-            alt.Tooltip('Percentage:Q', title='Percentage', format='.2f')
+            alt.Tooltip('Percentage:Q' + '%', title='Percentage', format='.2f')
         ]
     ).properties(
         title=f"Cause of Death Proportions in {year}"

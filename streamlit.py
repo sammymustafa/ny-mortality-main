@@ -6,8 +6,8 @@ import streamlit as st
 
 def load_data():
     df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
-    df['Age Group'] = df['Age Group'].str.replace(r'^1/9$|^Jan-9$', '1-9', regex=True)
-    df['Age Group'] = df['Age Group'].str.replace(r'^10/19$|^Oct-19$', '10-19', regex=True)
+    df['Age-Group'] = df['Age-Group'].replace('45300', '1-9')
+    df['Age-Group'] = df['Age-Group'].replace('45584', '10-19')
     df['Age-Group'] = df['Age-Group'].replace({'10/19': '10-19'}, regex=True)
     df.columns = df.columns.str.replace(' ', '-')
     df = df[df["Cause"] != "Total"]

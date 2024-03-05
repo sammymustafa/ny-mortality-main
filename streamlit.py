@@ -3,14 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Hypothetical data for the dashboard
-data = {
-    'Year': [2010, 2010, 2010, 2011, 2011, 2011, 2012, 2012, 2012] * 3,
-    'County': ['Albany', 'Bronx', 'Broome'] * 9,
-    'Cause of Death': ['Diseases of the Heart', 'Accidents', 'Diabetes Mellitus'] * 9,
-    'Deaths': [771, 132, 30] * 9
-}
-
-df = pd.DataFrame(data)
+df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
 
 # Group data by Year and Cause of Death for line chart
 line_chart_data = df.groupby(['Year', 'Cause of Death'])['Deaths'].sum().unstack()

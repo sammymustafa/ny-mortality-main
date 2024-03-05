@@ -32,7 +32,7 @@ gender_title = "Both Genders" if gender == "All" else gender + "s"
 
 # Cause of Death Selector
 cause_options = df["Cause"].unique()
-selected_cause = st.selectbox("Select Cause of Death", options=cause_options, index=cause_options.index("AIDS"))
+selected_cause = st.selectbox("Select Cause of Death", options=cause_options)
 
 ### Data Filtering ###
 if gender == "All":

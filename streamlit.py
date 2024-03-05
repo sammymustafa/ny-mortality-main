@@ -60,9 +60,8 @@ total_deaths = filtered_df['Deaths'].sum()
 heatmap_data = filtered_df.groupby(["Age-Group", "Race"])["Deaths"].sum().reset_index()
 heatmap_data['Proportion'] = heatmap_data['Deaths'] / total_deaths
 age_group_order = ['<1', '1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
-x_scale = alt.Scale(domain=age_group_order)
 heatmap = alt.Chart(heatmap_data).mark_rect().encode(
-    x=alt.X('Age-Group:N', title='Age Group', sort=age_group_order, scale=x_scale),
+    x=alt.X('Age-Group:N', title='Age Group', sort=age_group_order),
     y=alt.Y("Race:N", title="Race/Ethnicity"),
     color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]

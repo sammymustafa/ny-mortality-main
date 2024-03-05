@@ -9,12 +9,13 @@ def load_data():
     df.columns = df.columns.str.replace(' ', '-')
     df['Age-Group'] = df['Age-Group'].replace('45300', '1-9')
     df['Age-Group'] = df['Age-Group'].replace('45584', '10-19')
+    df = df[df["Cause"] != "Total"]
     df["Sex"] = df["Sex"].replace({"F": "Female", "M": "Male"})
     return df
 
 df = load_data()
-df.rename(columns={"Race": "Race"}, inplace=True)
-df.rename(columns={"Cause": "Cause"}, inplace=True)
+df.rename(columns={"Race-or-Ethnicity": "Race"}, inplace=True)
+df.rename(columns={"Selected-Cause-of-Death": "Cause"}, inplace=True)
 
 ### Streamlit UI Components ###
 

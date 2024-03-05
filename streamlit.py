@@ -7,7 +7,6 @@ import streamlit as st
 def load_data():
     df = pd.read_csv("Vital_Statistics_Deaths_by_Age-Group__Sex__Race_Ethnicity__and_Selected_Cause_of_Death__Beginning_2003_20240214.csv")
     df.columns = df.columns.str.replace(' ', '-')
-    df = df[df["Cause-of-Death"] != "Total"]
     return df
 
 df = load_data()

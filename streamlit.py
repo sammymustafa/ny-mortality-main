@@ -101,10 +101,13 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 
 ### Line Chart: Cause of Death Proportion ###
-# Filter out 'All Other Causes'
-limited_df = df[df['Cause'] != 'All Other Causes']
+# Filter out 'All Other Causes' and apply gender filter if not 'All'
+if gender == "All":
+    limited_df = df[df['Cause'] != 'All Other Causes']
+else:
+    limited_df = df[(df['Cause'] != 'All Other Causes') & (df['Sex'] == gender)]
 
-# Calculate the sum of deaths for each cause and year
+# Calculate the sum of deaths for each cause and year after applying gender filter
 cause_year_deaths = limited_df.groupby(['Cause', 'Year'])['Deaths'].sum().reset_index()
 
 # Pivot the table to get years as columns and causes as rows
@@ -128,6 +131,8 @@ line_chart = alt.Chart(reset_df).mark_line(point=True).encode(
     y=alt.Y('Percentage_Change:Q', title='Percentage Increase from 2003'),
     color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),
     tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Percentage_Change:Q', title='Percentage Change'), alt.Tooltip('Cause:N')]
+).properties(
+    title = f"Percentage Change in Deaths from 2003 for {gender_title}"
 ).interactive()
 
 st.altair_chart(line_chart, use_container_width=True)

@@ -2,6 +2,8 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 
+# Acknowledgment: trouble-shooted code with ChatGPT-4
+
 ### Data Loading and Preprocessing ###
 
 def load_data():
@@ -100,26 +102,29 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 ### Line Chart: Cause of Death Proportion ###
 # Additional preprocessing to calculate percentage increases
-# First, filter out 'All Other Causes' if not part of your analysis
+# Exclude 'All Other Causes'
 df = df[df['Cause'] != 'All Other Causes']
 
-# Calculate the 2003 death counts for each cause to use as a baseline
+# Calculate the baseline deaths for each cause in 2003
 baseline_deaths = df[df['Year'] == 2003].groupby('Cause')['Deaths'].sum().reset_index(name='Baseline_Deaths')
 
-# Merge the baseline counts back with the original dataframe to calculate percentage increases
+# Merge the baseline deaths with the main dataframe
 df = df.merge(baseline_deaths, on='Cause')
 
-# Calculate the percentage increase from the baseline year
-df['Percentage_Increase'] = ((df['Deaths'] - df['Baseline_Deaths']) / df['Baseline_Deaths']) * 100
+# Calculate the percentage change from 2003 for each year and each cause
+df['Percentage_Change'] = ((df['Deaths'] - df['Baseline_Deaths']) / df['Baseline_Deaths']) * 100
+
+# Filter out the year 2003 since its change is 0 by definition
+df = df[df['Year'] != 2003]
 
 ### Visualizations ###
 
-# Line Chart: Percentage Increase of Deaths from 2003
+# Line Chart: Percentage Change of Deaths from 2003
 line_chart = alt.Chart(df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
-    y=alt.Y('Percentage_Increase:Q', title='Percentage Increase from 2003'),
+    y=alt.Y('Percentage_Change:Q', title='Percentage Increase from 2003'),
     color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),
-    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Deaths:Q'), alt.Tooltip('Percentage_Increase:Q', title='Percentage Increase', format='.1f'), alt.Tooltip('Cause:N')]
+    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Deaths:Q'), alt.Tooltip('Percentage_Change:Q', title='Percentage Change', format='.1f'), alt.Tooltip('Cause:N')]
 ).interactive()
 
 st.altair_chart(line_chart, use_container_width=True)

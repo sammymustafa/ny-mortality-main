@@ -68,6 +68,7 @@ heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
 ).properties(
+    width = 900,
     height = 400,
     title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )

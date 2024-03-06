@@ -99,23 +99,14 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 
 ### Line Chart: Cause of Death Proportion ###
-# Create a selection brush for the x-axis to enable range selection
-brush = alt.selection(type='interval', encodings=['x'])
-
-# Create a color condition that highlights the selected disease and dims others
-highlight = alt.condition(brush, alt.Color('Cancer:N', legend=None), alt.value('lightgray'))
-
 # Create the base line chart
 base = alt.Chart(df).mark_line().encode(
     x=alt.X('Year:O', title='Year'),
     y=alt.Y('Deaths:Q', title='Death Count'),
-    color='Cancer:N',
-    opacity=alt.condition(brush, alt.value(0.7), alt.value(0.1))
+    color='Cancer:N'
 ).properties(
     width=600,
     height=300
-).add_selection(
-    brush
 )
 
 # Add a rule to highlight the selected disease line

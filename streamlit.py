@@ -100,10 +100,11 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 ### Line Chart: Cause of Death Proportion ###
 # Create the base line chart
-line_chart = alt.Chart(df).mark_line().encode(
+line_chart = alt.Chart(df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
     y=alt.Y('Deaths:Q', title='Death Count'),
-    color='Cause:N'
-)
+    color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),
+    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Deaths:Q'), alt.Tooltip('Cause:N')]
+).interactive()
 
 st.altair_chart(line_chart, use_container_width=True)

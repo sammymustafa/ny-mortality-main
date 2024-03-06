@@ -100,9 +100,9 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 ### Line Chart: Cause of Death Proportion ###
 # Create the base line chart
-filtered_df_2 = filtered_df[filtered_df['Cause'] != 'All Other Causes']
+limited_df = df[df['Cause'] != 'All Other Causes']
 
-line_chart = alt.Chart(filtered_df_2).mark_line(point=True).encode(
+line_chart = alt.Chart(limited_df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
     y=alt.Y('Deaths:Q', title='Death Count'),
     color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),

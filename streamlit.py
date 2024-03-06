@@ -102,7 +102,7 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 ### Line Chart: Cause of Death Proportion ###
 limited_df = df[df['Cause'] != 'All Other Causes']
-limited_df = limited_df["Cause"] == selected_cause
+limited_df = (limited_df["Cause"] == selected_cause)
 
 line_chart = alt.Chart(limited_df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),

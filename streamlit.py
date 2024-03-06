@@ -96,27 +96,3 @@ if st.checkbox("Show Cause of Death Proportions"):
     )
 
     st.altair_chart(pie_chart, use_container_width=True)
-
-
-### Line Chart: Cause of Death Proportion ###
-# Create the base line chart
-base = alt.Chart(df).mark_line().encode(
-    x=alt.X('Year:O', title='Year'),
-    y=alt.Y('Deaths:Q', title='Death Count'),
-    color='Cancer:N'
-).properties(
-    width=600,
-    height=300
-)
-
-# Add a rule to highlight the selected disease line
-selected_disease_rule = base.transform_filter(
-    selected_cause
-).mark_line().encode(
-    size=alt.value(3)
-)
-
-# Combine the base chart with the highlighted rule
-line_chart = base + selected_disease_rule
-
-st.altair_chart(line_chart, use_container_width=True)

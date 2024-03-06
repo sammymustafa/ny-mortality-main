@@ -101,14 +101,15 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 
 ### Line Chart: Cause of Death Proportion ###
-filtered_df_2 = filtered_df[filtered_df['Cause'] != 'All Other Causes']
+limited_df = df[df['Cause'] != 'All Other Causes'] & (df["Cause"] == selected_cause)
 
-line_chart = alt.Chart(filtered_df_2).mark_line(point=True).encode(
+line_chart = alt.Chart(limited_df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
     y=alt.Y('Deaths:Q', title='Death Count'),
+    color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),
     tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Deaths:Q'), alt.Tooltip('Cause:N')]
 ).properties(
-    title=f"Change in Deaths from 2003-2021"
+    title=f"Percentage Change in Deaths from 2003-2021"
     )
 
 st.altair_chart(line_chart, use_container_width=True)

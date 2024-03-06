@@ -120,7 +120,7 @@ base = alt.Chart(df).mark_line().encode(
 
 # Add a rule to highlight the selected disease line
 selected_disease_rule = base.transform_filter(
-    alt.datum.Cancer == cancer  # Use the selected cancer type from the dropdown
+    selected_cause
 ).mark_line().encode(
     size=alt.value(3)
 )

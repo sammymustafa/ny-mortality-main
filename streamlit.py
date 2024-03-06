@@ -68,6 +68,7 @@ heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
 ).properties(
+    height = 400,
     title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )
 
@@ -94,7 +95,6 @@ if st.checkbox("Show Cause of Death Proportions"):
             alt.Tooltip('Percentage:Q', title='Percentage', format='.1f')
         ]
     ).properties(
-        height = 400,
         title=f"Cause of Death Proportions in {year}"
     )
 

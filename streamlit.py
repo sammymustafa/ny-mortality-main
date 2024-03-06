@@ -62,7 +62,7 @@ heatmap_data['Proportion'] = heatmap_data['Deaths'] / total_deaths
 age_group_order = ['<1', '1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
 heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     x=alt.X('Age-Group:N', title='Age Group', sort=age_group_order),
-    y=alt.Y("Race:N", title="Race/Ethnicity"),
+    y=alt.Y("Race:N", title="Race/Ethnicity", sort=race_order),
     color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
 ).properties(
@@ -96,3 +96,36 @@ if st.checkbox("Show Cause of Death Proportions"):
     )
 
     st.altair_chart(pie_chart, use_container_width=True)
+
+
+### Line Chart: Cause of Death Proportion ###
+# Create a selection brush for the x-axis to enable range selection
+brush = alt.selection(type='interval', encodings=['x'])
+
+# Create a color condition that highlights the selected disease and dims others
+highlight = alt.condition(brush, alt.Color('Cancer:N', legend=None), alt.value('lightgray'))
+
+# Create the base line chart
+base = alt.Chart(df).mark_line().encode(
+    x=alt.X('Year:O', title='Year'),
+    y=alt.Y('Deaths:Q', title='Death Count'),
+    color='Cancer:N',
+    opacity=alt.condition(brush, alt.value(0.7), alt.value(0.1))
+).properties(
+    width=600,
+    height=300
+).add_selection(
+    brush
+)
+
+# Add a rule to highlight the selected disease line
+selected_disease_rule = base.transform_filter(
+    alt.datum.Cancer == cancer  # Use the selected cancer type from the dropdown
+).mark_line().encode(
+    size=alt.value(3)
+)
+
+# Combine the base chart with the highlighted rule
+line_chart = base + selected_disease_rule
+
+st.altair_chart(line_chart, use_container_width=True)

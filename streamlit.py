@@ -101,17 +101,29 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 
 ### Line Chart: Cause of Death Proportion ###
-# Filter out 'All Other Causes' and also select only the 'selected_cause'
-limited_df = df[(df['Cause'] != 'All Other Causes') & (df['Cause'] == selected_cause)]
+# Filter out 'All Other Causes'
+limited_df = df[df['Cause'] != 'All Other Causes']
 
-# Calculate the 2003 death counts for each cause to use as a baseline for the selected cause
-baseline_deaths = limited_df[limited_df['Year'] == 2003]['Deaths'].values[0]
+# Calculate the sum of deaths for each cause and year
+cause_year_deaths = limited_df.groupby(['Cause', 'Year'])['Deaths'].sum().reset_index()
 
-# Calculate the percentage change for each year based on the 2003 baseline
-limited_df['Percentage_Change'] = ((limited_df['Deaths'] - baseline_deaths) / baseline_deaths) * 100
+# Pivot the table to get years as columns and causes as rows
+pivot_df = cause_year_deaths.pivot(index='Cause', columns='Year', values='Deaths')
 
-# Create the line chart with points and tooltips
-line_chart = alt.Chart(limited_df).mark_line(point=True).encode(
+# Replace 0s with NaN to avoid dividing by zero
+pivot_df.replace(0, pd.NA, inplace=True)
+
+# Calculate the percentage change relative to 2003 for each cause
+percentage_change = pivot_df.apply(lambda x: (x - x[2003]) / x[2003] * 100, axis=1)
+
+# Reset the index to melt and get a long-form DataFrame
+reset_df = percentage_change.reset_index().melt(id_vars=['Cause'], var_name='Year', value_name='Percentage_Change')
+
+# Filter out the year 2003 as its percentage change is 0 by definition
+reset_df = reset_df[reset_df['Year'] != 2003]
+
+# Plotting
+line_chart = alt.Chart(reset_df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
     y=alt.Y('Percentage_Change:Q', title='Percentage Increase from 2003'),
     color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),

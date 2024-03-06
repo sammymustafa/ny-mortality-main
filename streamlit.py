@@ -133,7 +133,7 @@ line_chart = alt.Chart(reset_df).mark_line(point=True).encode(
     tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Percentage_Change:Q', title='Percentage Change'), alt.Tooltip('Cause:N')]
 ).properties(
     width = 600,
-    height = 900
+    height = 900,
     title = f"Percentage Change in Deaths from 2003 for {gender_title}"
 ).interactive()
 

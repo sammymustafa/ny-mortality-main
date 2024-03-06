@@ -99,24 +99,27 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 
 ### Line Chart: Cause of Death Proportion ###
+# Additional preprocessing to calculate percentage increases
+# First, filter out 'All Other Causes' if not part of your analysis
+df = df[df['Cause'] != 'All Other Causes']
+
 # Calculate the 2003 death counts for each cause to use as a baseline
-baseline_deaths = df[df['Year'] == 2003].groupby('Cause')['Deaths'].sum().reset_index()
+baseline_deaths = df[df['Year'] == 2003].groupby('Cause')['Deaths'].sum().reset_index(name='Baseline_Deaths')
 
 # Merge the baseline counts back with the original dataframe to calculate percentage increases
-df = df.merge(baseline_deaths, on='Cause', suffixes=('', '_2003'))
+df = df.merge(baseline_deaths, on='Cause')
 
-# Calculate the percentage increase
-df['Percentage_Increase'] = ((df['Deaths'] - df['Deaths_2003']) / df['Deaths_2003']) * 100
+# Calculate the percentage increase from the baseline year
+df['Percentage_Increase'] = ((df['Deaths'] - df['Baseline_Deaths']) / df['Baseline_Deaths']) * 100
 
-# Filter out 'All Other Causes'
-limited_df = df[df['Cause'] != 'All Other Causes']
+### Visualizations ###
 
-# Create the line chart with points and tooltips
-line_chart = alt.Chart(limited_df).mark_line(point=True).encode(
+# Line Chart: Percentage Increase of Deaths from 2003
+line_chart = alt.Chart(df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
     y=alt.Y('Percentage_Increase:Q', title='Percentage Increase from 2003'),
     color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),
-    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Percentage_Increase:Q', title='Percentage Increase'), alt.Tooltip('Cause:N')]
+    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Deaths:Q'), alt.Tooltip('Percentage_Increase:Q', title='Percentage Increase', format='.1f'), alt.Tooltip('Cause:N')]
 ).interactive()
 
 st.altair_chart(line_chart, use_container_width=True)

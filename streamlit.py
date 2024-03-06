@@ -99,14 +99,24 @@ if st.checkbox("Show Cause of Death Proportions"):
 
 
 ### Line Chart: Cause of Death Proportion ###
-# Create the base line chart
+# Calculate the 2003 death counts for each cause to use as a baseline
+baseline_deaths = df[df['Year'] == 2003].groupby('Cause')['Deaths'].sum().reset_index()
+
+# Merge the baseline counts back with the original dataframe to calculate percentage increases
+df = df.merge(baseline_deaths, on='Cause', suffixes=('', '_2003'))
+
+# Calculate the percentage increase
+df['Percentage_Increase'] = ((df['Deaths'] - df['Deaths_2003']) / df['Deaths_2003']) * 100
+
+# Filter out 'All Other Causes'
 limited_df = df[df['Cause'] != 'All Other Causes']
 
+# Create the line chart with points and tooltips
 line_chart = alt.Chart(limited_df).mark_line(point=True).encode(
     x=alt.X('Year:O', title='Year'),
-    y=alt.Y('Deaths:Q', title='Death Count'),
+    y=alt.Y('Percentage_Increase:Q', title='Percentage Increase from 2003'),
     color=alt.Color('Cause:N', legend=alt.Legend(title="Cause")),
-    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Deaths:Q'), alt.Tooltip('Cause:N')]
+    tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Percentage_Increase:Q', title='Percentage Increase'), alt.Tooltip('Cause:N')]
 ).interactive()
 
 st.altair_chart(line_chart, use_container_width=True)

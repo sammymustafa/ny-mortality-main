@@ -58,19 +58,30 @@ bar_chart = alt.Chart(bar_chart_data).mark_bar().encode(
 st.altair_chart(bar_chart, use_container_width=True)
 
 # Heatmap: Mortality Rates by Age Group and Race/Ethnicity
-total_deaths = filtered_df['Deaths'].sum()
 heatmap_data = filtered_df.groupby(["Age-Group", "Race"])["Deaths"].sum().reset_index()
-heatmap_data['Proportion'] = heatmap_data['Deaths'] / total_deaths
-age_group_order = ['<1', '1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
+
+# Calculate the sum of deaths by race
+sum_deaths_by_race = filtered_df.groupby("Race")["Deaths"].sum().reset_index().rename(columns={"Deaths": "Total_Deaths_by_Race"})
+
+# Merge this back with your heatmap data
+heatmap_data = heatmap_data.merge(sum_deaths_by_race, on="Race")
+
+# Calculate the proportion for each race
+heatmap_data['Proportion'] = heatmap_data['Deaths'] / heatmap_data['Total_Deaths_by_Race']
+
+# Continue as before with the chart creation
 heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     x=alt.X('Age-Group:N', title='Age Group', sort=age_group_order),
     y=alt.Y("Race:N", title="Race/Ethnicity", sort=race_order),
-    color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="redyellowgreen"), title="Proportion of Total Deaths"),
+    color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="reds"), title="Proportion of Race's Total Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
 ).properties(
-    height = 400,
+    height = 400,  # or any other height you want
     title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )
+
+st.altair_chart(heatmap, use_container_width=True)
+
 
 st.altair_chart(heatmap, use_container_width=True)
 

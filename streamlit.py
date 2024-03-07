@@ -59,6 +59,7 @@ st.altair_chart(bar_chart, use_container_width=True)
 
 # Heatmap: Mortality Rates by Age Group and Race/Ethnicity
 heatmap_data = filtered_df.groupby(["Age-Group", "Race"])["Deaths"].sum().reset_index()
+age_group_order = ['<1', '1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
 
 # Calculate the sum of deaths by race
 sum_deaths_by_race = filtered_df.groupby("Race")["Deaths"].sum().reset_index().rename(columns={"Deaths": "Total_Deaths_by_Race"})
@@ -79,10 +80,6 @@ heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     height = 400,  # or any other height you want
     title=f"Mortality Rates by Age Group and Race/Ethnicity in {year} for {gender_title} due to {selected_cause}"
 )
-
-st.altair_chart(heatmap, use_container_width=True)
-
-
 st.altair_chart(heatmap, use_container_width=True)
 
 ### Pie Chart: Cause of Death Proportion ###

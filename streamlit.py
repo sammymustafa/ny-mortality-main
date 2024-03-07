@@ -74,7 +74,7 @@ heatmap_data['Proportion'] = heatmap_data['Deaths'] / heatmap_data['Total_Deaths
 heatmap = alt.Chart(heatmap_data).mark_rect().encode(
     x=alt.X('Age-Group:N', title='Age Group', sort=age_group_order),
     y=alt.Y("Race:N", title="Race/Ethnicity", sort=race_order),
-    color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="reds"), title="Proportion of Race's Total Deaths"),
+    color=alt.Color('Proportion:Q', scale=alt.Scale(scheme="reds"), title="Proportion of Race's\nTotal Deaths"),
     tooltip=["Age-Group", "Race", "Deaths", "Proportion"]
 ).properties(
     height = 400,  # or any other height you want
